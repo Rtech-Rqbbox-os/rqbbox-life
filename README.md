@@ -127,7 +127,7 @@ The entire game is a single **63KB HTML file** — vanilla HTML5 + CSS3 + JavaSc
 
 ## License
 
-MIT &copy; 2026 RhysTech. Part of the RQBBOX OS ecosystem.
+**&copy; 2026 RhysTech. All rights reserved.**  RQBBOX&reg;, RQBBOX MODE&trade;, RBOWS&trade;, RQBBOX LIFE&trade; RhysTech.
 
 <div align="center">
   <br>
