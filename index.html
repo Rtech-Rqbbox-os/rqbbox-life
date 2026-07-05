@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RQBBOX LIFE — Live Your Neon Life</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="description" content="A neon-drenched open-ended life simulation game for RQBBOX OS. Live your life in RQBBOX City.">
+  <meta property="og:title" content="RQBBOX LIFE">
+  <meta property="og:description" content="A flagship life-sandbox simulation for RQBBOX OS. Build your legacy in RQBBOX City.">
+  <meta property="og:image" content="https://rtech-rqbbox-os.github.io/rqbbox-life/assets/banner.svg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RQBBOX LIFE">
+  <meta name="twitter:description" content="A neon-drenched open-ended life simulation game.">
+  <meta name="twitter:image" content="https://rtech-rqbbox-os.github.io/rqbbox-life/assets/banner.svg">
+  <style>
+    :root {
+      --cyan: #00d4ff;
+      --green: #00ff88;
+      --pink: #ff0080;
+      --purple: #8844ff;
+      --yellow: #ffdd00;
+      --bg: #050510;
+      --surface: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.06);
+      --text: rgba(255,255,255,0.6);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 64px 64px;
+    }
+    .bg-glow {
+      position: fixed; top: -300px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+      z-index: 0; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; bottom: -400px; right: -200px;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,255,136,0.04) 0%, transparent 70%);
+      z-index: 0; pointer-events: none;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(5,5,16,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand img { width: 32px; height: 32px; }
+    .nav-brand span { font-size: 16px; font-weight: 700; color: var(--green); letter-spacing: 3; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      color: var(--text); text-decoration: none; font-size: 13px; letter-spacing: 1;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-cta {
+      padding: 8px 20px; border-radius: 8px; font-weight: 600;
+      background: rgba(0,255,136,0.1) !important; border: 1px solid rgba(0,255,136,0.3);
+      color: var(--green) !important;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { background: rgba(0,255,136,0.2) !important; }
+    main { position: relative; z-index: 1; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 120px 24px 80px; position: relative;
+    }
+    .hero-icon {
+      width: 120px; height: 120px; margin-bottom: 32px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .hero-title {
+      font-size: clamp(48px, 10vw, 96px); font-weight: 800;
+      letter-spacing: 8px; line-height: 1;
+      background: linear-gradient(135deg, var(--green), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(18px, 3vw, 28px); font-weight: 200;
+      letter-spacing: 12px; color: var(--cyan); margin-top: 8px;
+      opacity: 0.7;
+    }
+    .hero-tagline {
+      font-size: 16px; color: rgba(255,255,255,0.25); letter-spacing: 6px;
+      margin-top: 24px;
+    }
+    .hero-buttons {
+      display: flex; gap: 16px; margin-top: 48px; flex-wrap: wrap; justify-content: center;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border-radius: 12px; font-size: 14px;
+      font-weight: 600; letter-spacing: 2; text-decoration: none;
+      transition: all 0.3s; cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), #00cc6a);
+      color: #050510;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,255,136,0.3); }
+    .btn-secondary {
+      background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+      color: var(--cyan);
+    }
+    .btn-secondary:hover { background: rgba(0,212,255,0.2); transform: translateY(-2px); }
+    .hero-stats {
+      display: flex; gap: 48px; margin-top: 64px; flex-wrap: wrap; justify-content: center;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .num { font-size: 36px; font-weight: 700; color: var(--cyan); }
+    .hero-stat .label { font-size: 11px; letter-spacing: 3; color: rgba(255,255,255,0.3); margin-top: 4px; }
+
+    /* Banner */
+    .banner-section {
+      padding: 0 24px; margin: 0 auto; max-width: 1100px;
+    }
+    .banner-section img {
+      width: 100%; border-radius: 16px; border: 1px solid var(--border);
+    }
+
+    /* Features */
+    .features {
+      padding: 120px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .section-header {
+      text-align: center; margin-bottom: 64px;
+    }
+    .section-header h2 {
+      font-size: 36px; font-weight: 700; letter-spacing: 4;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-header p {
+      color: rgba(255,255,255,0.3); font-size: 14px; letter-spacing: 4;
+      margin-top: 8px;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; transition: all 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(0,212,255,0.2);
+      background: rgba(255,255,255,0.04);
+      transform: translateY(-4px);
+    }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-size: 16px; font-weight: 600; color: white; letter-spacing: 1;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.4);
+    }
+
+    /* World */
+    .world {
+      padding: 120px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .districts {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px; margin-top: 48px;
+    }
+    .district {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px 16px; text-align: center;
+      transition: all 0.3s;
+    }
+    .district:hover { border-color: rgba(0,212,255,0.2); transform: translateY(-2px); }
+    .district-name {
+      font-size: 13px; font-weight: 600; color: var(--cyan); letter-spacing: 2;
+      margin-bottom: 6px;
+    }
+    .district-desc { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+    /* Controls */
+    .controls {
+      padding: 120px 24px; max-width: 800px; margin: 0 auto;
+    }
+    .control-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 48px;
+    }
+    .control-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .control-key {
+      font-family: 'Consolas', monospace; font-size: 12px; font-weight: 600;
+      color: var(--green); background: rgba(0,255,136,0.08);
+      padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(0,255,136,0.2);
+      white-space: nowrap;
+    }
+    .control-action { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+    /* CTA */
+    .cta {
+      padding: 120px 24px; text-align: center; position: relative;
+    }
+    .cta-box {
+      max-width: 600px; margin: 0 auto; padding: 64px 48px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 24px;
+    }
+    .cta-box h2 {
+      font-size: 28px; font-weight: 700; color: white; letter-spacing: 3;
+      margin-bottom: 12px;
+    }
+    .cta-box p { color: rgba(255,255,255,0.3); font-size: 14px; margin-bottom: 32px; }
+
+    /* Footer */
+    footer {
+      padding: 32px; text-align: center; border-top: 1px solid var(--border);
+      color: rgba(255,255,255,0.15); font-size: 12px; letter-spacing: 2;
+    }
+    footer a { color: var(--cyan); text-decoration: none; }
+
+    /* Animations */
+    @keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <nav>
+    <a class="nav-brand" href="#">
+      <img src="assets/favicon.svg" alt="RQBBOX LIFE">
+      <span>RQBBOX LIFE</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#world">World</a>
+      <a href="#controls">Controls</a>
+      <a href="game/index.html" class="nav-cta">PLAY NOW</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <img src="assets/icon.svg" alt="RQBBOX LIFE Icon" class="hero-icon">
+      <h1 class="hero-title">RQBBOX</h1>
+      <div class="hero-sub">LIFE</div>
+      <div class="hero-tagline">LIVE YOUR NEON LIFE</div>
+      <div class="hero-buttons">
+        <a href="game/index.html" class="btn btn-primary">▶ PLAY NOW</a>
+        <a href="https://github.com/Rtech-Rqbbox-os/rqbbox-life" class="btn btn-secondary">GITHUB</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">63</div>
+          <div class="label">KB GAME SIZE</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">0</div>
+          <div class="label">DEPENDENCIES</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">15</div>
+          <div class="label">ACHIEVEMENTS</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">10</div>
+          <div class="label">CAREERS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner -->
+    <section class="banner-section">
+      <img src="assets/banner.svg" alt="RQBBOX LIFE Banner">
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+      <div class="section-header">
+        <h2>FEATURES</h2>
+        <p>EVERYTHING YOU NEED TO BUILD YOUR LIFE</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,212,255,0.08)">🧬</div>
+          <h3>Character Creator</h3>
+          <p>Choose your name and lifestyle archetype — Explorer, Socialite, Hustler, or Creator. Every choice shapes your story.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,255,136,0.08)">💼</div>
+          <h3>10 Career Paths</h3>
+          <p>Work your way from Cashier to CEO. Each career has unique requirements, pay grades, and progression tiers.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,0,128,0.08)">🏠</div>
+          <h3>6 Housing Tiers</h3>
+          <p>Start in a Studio Apartment and work your way up to a Cyber Estate. Your home affects energy recovery and happiness.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(136,68,255,0.08)">🚗</div>
+          <h3>7 Vehicles</h3>
+          <p>From Bicycle to Hoverbike. Vehicles unlock new areas and increase your movement speed through RQBBOX City.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,221,0,0.08)">👥</div>
+          <h3>Social System</h3>
+          <p>Meet procedurally generated NPCs with unique traits. Build friendships, manage relationships, grow your network.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,212,255,0.08)">🕐</div>
+          <h3>Day/Night Cycle</h3>
+          <p>4 daily phases — Morning, Day, Evening, Night — each with 6-8 unique activities and stat effects.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(0,255,136,0.08)">🎲</div>
+          <h3>Random Events</h3>
+          <p>8 event types with branching choices. Promotions, health scares, city festivals, friend conflicts — every day is different.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(255,0,128,0.08)">🌤</div>
+          <h3>Dynamic Weather</h3>
+          <p>6 weather types that change every 3 days. Rain, fog, clear skies — the city's mood shifts with the forecast.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:rgba(136,68,255,0.08)">🏆</div>
+          <h3>15 Achievements</h3>
+          <p>Track your milestones — first day, weekly survival, money goals, homeownership, career levels, and more.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- World -->
+    <section class="world" id="world">
+      <div class="section-header">
+        <h2>RQBBOX CITY</h2>
+        <p>THE NEON WORLD AWAITS</p>
+      </div>
+      <div class="districts">
+        <div class="district">
+          <div class="district-name">NEON CORE</div>
+          <div class="district-desc">Holographic billboards, 24/7 energy</div>
+        </div>
+        <div class="district">
+          <div class="district-name">CIRCUIT PARK</div>
+          <div class="district-desc">LED trees, green glow trails</div>
+        </div>
+        <div class="district">
+          <div class="district-name">DATA ROW</div>
+          <div class="district-desc">Tech hub, glass towers</div>
+        </div>
+        <div class="district">
+          <div class="district-name">HARBOR LIGHTS</div>
+          <div class="district-desc">Waterfront, converted warehouses</div>
+        </div>
+        <div class="district">
+          <div class="district-name">RESIDENTIAL SPIRES</div>
+          <div class="district-desc">Sky gardens, living towers</div>
+        </div>
+        <div class="district">
+          <div class="district-name">THE GLOW MARKETS</div>
+          <div class="district-desc">Underground neon bazaar</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls" id="controls">
+      <div class="section-header">
+        <h2>CONTROLS</h2>
+        <p>KEYBOARD, MOUSE, OR GAMEPAD</p>
+      </div>
+      <div class="control-grid">
+        <div class="control-item">
+          <span class="control-key">CLICK</span>
+          <span class="control-action">Select activity</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">ESC</span>
+          <span class="control-action">Close overlay</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">A</span>
+          <span class="control-action">Gamepad select</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">B</span>
+          <span class="control-action">Gamepad back</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">START</span>
+          <span class="control-action">Pause menu</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">CTRL+SHIFT+P</span>
+          <span class="control-action">Performance mode</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">CTRL+SHIFT+S</span>
+          <span class="control-action">Save game</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="cta-box">
+        <img src="assets/icon.svg" alt="RQBBOX LIFE" style="width:64px; margin-bottom:24px;" class="pulse">
+        <h2>READY TO LIVE?</h2>
+        <p>Open the game and start your neon life in RQBBOX City. No downloads, no installs — just open and play.</p>
+        <a href="game/index.html" class="btn btn-primary">▶ PLAY RQBBOX LIFE</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    RQBBOX LIFE v1.0 &middot; 2026 &middot; <a href="https://github.com/Rtech-Rqbbox-os">RhysTech</a> &middot; Part of the RQBBOX OS ecosystem
+  </footer>
+
+  <script>
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const el = document.querySelector(a.getAttribute('href'));
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Intersection observer for fade-in
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .district, .control-item').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.6s, transform 0.6s';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
